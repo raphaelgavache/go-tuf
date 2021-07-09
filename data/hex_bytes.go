@@ -1,6 +1,7 @@
 package data
 
 import (
+	"crypto/sha256"
 	"encoding/hex"
 	"errors"
 )
@@ -30,4 +31,9 @@ func (b HexBytes) MarshalJSON() ([]byte, error) {
 
 func (b HexBytes) String() string {
 	return hex.EncodeToString(b)
+}
+
+func PathHexDigest(s string) string {
+	b := sha256.Sum256([]byte(s))
+	return hex.EncodeToString(b[:])
 }
