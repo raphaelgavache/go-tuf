@@ -15,9 +15,8 @@ func (r *Role) ValidKey(id string) bool {
 }
 
 type DB struct {
-	roles               map[string]*Role
-	keys                map[string]*data.Key
-	delegationsVerifier bool
+	roles map[string]*Role
+	keys  map[string]*data.Key
 }
 
 func NewDB() *DB {
@@ -33,9 +32,8 @@ type DelegationsVerifier interface {
 
 func NewDelegationsVerifier(d *data.Delegations) (DelegationsVerifier, error) {
 	db := &DB{
-		roles:               make(map[string]*Role, len(d.Roles)),
-		keys:                make(map[string]*data.Key),
-		delegationsVerifier: true,
+		roles: make(map[string]*Role, len(d.Roles)),
+		keys:  make(map[string]*data.Key),
 	}
 	for _, r := range d.Roles {
 		role := &data.Role{Threshold: r.Threshold, KeyIDs: r.KeyIDs}
