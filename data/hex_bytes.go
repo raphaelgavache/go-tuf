@@ -33,6 +33,9 @@ func (b HexBytes) String() string {
 	return hex.EncodeToString(b)
 }
 
+// 4.5. File formats: targets.json and delegated target roles:
+// ...each target path, when hashed with the SHA-256 hash function to produce
+// a 64-byte hexadecimal digest (HEX_DIGEST)...
 func PathHexDigest(s string) string {
 	b := sha256.Sum256([]byte(s))
 	return hex.EncodeToString(b[:])

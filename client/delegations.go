@@ -45,7 +45,11 @@ func (c *Client) getTargetFileMeta(file string) (data.TargetFileMeta, error) {
 			verifiers[d.child.Name] = targetVerifier
 		}
 	}
-	return data.TargetFileMeta{}, ErrMaxDelegations{file, c.MaxDelegations, snapshot.Version}
+	return data.TargetFileMeta{}, ErrMaxDelegations{
+		File: file,
+		MaxDelegations: c.MaxDelegations,
+		SnapshotVersion: snapshot.Version
+	}
 }
 
 func (c *Client) loadLocalSnapshot() (*data.Snapshot, error) {
@@ -88,7 +92,12 @@ func (c *Client) loadDelegatedTargets(snapshot *data.Snapshot, role string, veri
 	}
 	// 5.6.4 check against snapshot version
 	if target.Version != fileMeta.Version {
-		return nil, ErrTargetsSnapshotVersionMismatch{fileName, fileMeta.Version, target.Version, snapshot.Version}
+		return nil, ErrTargetsSnapshotVersionMismatch{
+			Role: fileName,
+			DownloadedTargetsVersion: fileMeta.Version,
+			TargetsSnapshotVersion: target.Version,
+			SnapshotVersion: snapshot.Version,
+		}
 	}
 	// 5.6.6 persist
 	if !alreadyStored {

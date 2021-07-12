@@ -155,7 +155,7 @@ func TestPersistedMeta(t *testing.T) {
 					2,
 				},
 			},
-			ErrUnknownTarget{"unknown", 2},
+			ErrUnknownTarget{Name: "unknown", SnapshotVersion: 2},
 			"",
 		},
 		{
