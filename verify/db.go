@@ -27,7 +27,11 @@ func NewDB() *DB {
 	}
 }
 
-func NewDelegationsVerifier(d *data.Delegations) (*DB, error) {
+type DelegationsVerifier interface {
+	Unmarshal([]byte, interface{}, string, int) error
+}
+
+func NewDelegationsVerifier(d *data.Delegations) (DelegationsVerifier, error) {
 	db := &DB{
 		roles:               make(map[string]*Role, len(d.Roles)),
 		keys:                make(map[string]*data.Key),
@@ -35,7 +39,7 @@ func NewDelegationsVerifier(d *data.Delegations) (*DB, error) {
 	}
 	for _, r := range d.Roles {
 		role := &data.Role{Threshold: r.Threshold, KeyIDs: r.KeyIDs}
-		if err := db.AddRole(r.Name, role); err != nil {
+		if err := db.addRole(r.Name, role); err != nil {
 			return nil, err
 		}
 	}
@@ -77,9 +81,13 @@ func ValidRole(name string) bool {
 }
 
 func (db *DB) AddRole(name string, r *data.Role) error {
-	if !db.delegationsVerifier && !ValidRole(name) {
+	if !ValidRole(name) {
 		return ErrInvalidRole
 	}
+	return db.addRole(name, r)
+}
+
+func (db *DB) addRole(name string, r *data.Role) error {
 	if r.Threshold < 1 {
 		return ErrInvalidThreshold
 	}
