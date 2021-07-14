@@ -38,12 +38,23 @@ func TestDelegationsIterator(t *testing.T) {
 				},
 				"b": {
 					{Name: "c", Paths: defaultPathPatterns},
+				},
+				"c": {
 					{Name: "d", Paths: defaultPathPatterns},
+				},
+				"e": {
+					{Name: "f", Paths: defaultPathPatterns},
+					{Name: "g", Paths: defaultPathPatterns},
+				},
+				"g": {
+					{Name: "h", Paths: defaultPathPatterns},
+					{Name: "i", Paths: defaultPathPatterns},
+					{Name: "j", Paths: defaultPathPatterns},
 				},
 			},
 			rootDelegation: data.DelegatedRole{Name: "a", Paths: defaultPathPatterns},
 			file:           "",
-			resultOrder:    []string{"a", "b", "c", "d", "e"},
+			resultOrder:    []string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j"},
 		},
 		{
 			testName: "terminated in b",
@@ -78,7 +89,7 @@ func TestDelegationsIterator(t *testing.T) {
 			resultOrder:    []string{"a", "e"},
 		},
 		{
-			testName: "cycle avoided",
+			testName: "cycle avoided 1",
 			roles: map[string][]data.DelegatedRole{
 				"a": {
 					{Name: "b", Paths: defaultPathPatterns},
@@ -91,7 +102,28 @@ func TestDelegationsIterator(t *testing.T) {
 			},
 			rootDelegation: data.DelegatedRole{Name: "a", Paths: defaultPathPatterns},
 			file:           "",
-			resultOrder:    []string{"a", "b", "a", "e", "d"},
+			resultOrder:    []string{"a", "b", "d", "e"},
+		},
+
+		{
+			testName: "cycle avoided 2",
+			roles: map[string][]data.DelegatedRole{
+				"a": {
+					{Name: "a", Paths: defaultPathPatterns},
+					{Name: "b", Paths: defaultPathPatterns},
+				},
+				"b": {
+					{Name: "a", Paths: defaultPathPatterns},
+					{Name: "b", Paths: defaultPathPatterns},
+					{Name: "c", Paths: defaultPathPatterns},
+				},
+				"c": {
+					{Name: "c", Paths: defaultPathPatterns},
+				},
+			},
+			rootDelegation: data.DelegatedRole{Name: "a", Paths: defaultPathPatterns},
+			file:           "",
+			resultOrder:    []string{"a", "b", "c"},
 		},
 	}
 
@@ -111,10 +143,7 @@ func TestDelegationsIterator(t *testing.T) {
 				}
 				d.add(delegations, r.child.Name)
 			}
-			assert.Equal(t, len(tt.resultOrder), len(iterationOrder))
-			for i, role := range iterationOrder {
-				assert.Equal(t, tt.resultOrder[i], role)
-			}
+			assert.Equal(t, tt.resultOrder, iterationOrder)
 		})
 	}
 }
