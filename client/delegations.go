@@ -1,9 +1,28 @@
 package client
 
 import (
+	"bytes"
+	"encoding/json"
+
 	"github.com/theupdateframework/go-tuf/data"
+	"github.com/theupdateframework/go-tuf/util"
 	"github.com/theupdateframework/go-tuf/verify"
 )
+
+func (c *Client) GetTargetCustom(fileName string, file []byte) (*json.RawMessage, error) {
+	meta, err := c.getTargetFileMeta(fileName)
+	if err != nil {
+		return nil, err
+	}
+	actual, err := util.GenerateTargetFileMeta(bytes.NewBuffer(file), meta.HashAlgorithms()...)
+	if err != nil {
+		return nil, err
+	}
+	if err := util.TargetFileMetaEqual(actual, meta); err != nil {
+		return nil, err
+	}
+	return meta.Custom, nil
+}
 
 // getTargetFileMeta searches for a verified TargetFileMeta matching a file name
 // Requires a local snapshot to be loaded and is locked to the snapshot versions.
