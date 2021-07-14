@@ -193,6 +193,8 @@ func (d *delegationsIterator) next() (delegation, bool) {
 
 func (d *delegationsIterator) add(roles []data.DelegatedRole, parent string) error {
 	for i := len(roles) - 1; i >= 0; i-- {
+		// Push the roles onto the stack in reverse so we get an in-order traversal
+		// of the delegations graph.
 		r := roles[i]
 		matchesPath, err := r.MatchesPath(d.file)
 		if err != nil {
