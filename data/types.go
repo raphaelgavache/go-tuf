@@ -23,7 +23,7 @@ const (
 
 var (
 	KeyAlgorithms            = []string{"sha256", "sha512"}
-	ErrPathsAndPathHashesSet = errors.New("tuf: failed decoding targets : paths and path_hash_prefixes are set")
+	ErrPathsAndPathHashesSet = errors.New("tuf: failed validation of delegated target: paths and path_hash_prefixes are both set")
 )
 
 type Signed struct {
