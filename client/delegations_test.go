@@ -192,8 +192,14 @@ func TestRootDelegationMatchesAll(t *testing.T) {
 	c := &Client{db: verify.NewDB()}
 	c.db.AddRole("targets", &data.Role{Threshold: 1})
 	d := c.rootTargetDelegation()
-	assert.True(t, d.MatchesPath("a.txt"))
-	assert.True(t, d.MatchesPath("var/b//g"))
+
+	matchesPath, err := d.MatchesPath("a.txt")
+	assert.NoError(t, err)
+	assert.True(t, matchesPath)
+
+	matchesPath, err = d.MatchesPath("var/b//g")
+	assert.NoError(t, err)
+	assert.True(t, matchesPath)
 }
 
 func TestUnverifiedTargets(t *testing.T) {

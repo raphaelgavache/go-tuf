@@ -241,21 +241,25 @@ type DelegatedRole struct {
 // MatchesPath evaluates whether the path patterns or path hash prefixes match
 // a given file. This determines whether a delegated role is responsible for
 // signing and verifying the file.
-func (d *DelegatedRole) MatchesPath(file string) bool {
+func (d *DelegatedRole) MatchesPath(file string) (bool, error) {
+	if err := d.validateFields(); err != nil {
+		return false, err
+	}
+
 	for _, pattern := range d.Paths {
 		if matched, _ := filepath.Match(pattern, file); matched {
-			return true
+			return true, nil
 		}
 	}
 
 	pathHash := PathHexDigest(file)
 	for _, hashPrefix := range d.PathHashPrefixes {
 		if strings.HasPrefix(pathHash, hashPrefix) {
-			return true
+			return true, nil
 		}
 	}
 
-	return false
+	return false, nil
 }
 
 // validateFields enforces the spec 1.0.19 section 4.5:
