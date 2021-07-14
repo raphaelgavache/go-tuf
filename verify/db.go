@@ -73,20 +73,20 @@ func (db *DB) AddKey(id string, k *data.Key) error {
 	return nil
 }
 
-var validRoles = map[string]struct{}{
+var topLevelRoles = map[string]struct{}{
 	"root":      {},
 	"targets":   {},
 	"snapshot":  {},
 	"timestamp": {},
 }
 
-func ValidRole(name string) bool {
-	_, ok := validRoles[name]
+func IsTopLevelRole(name string) bool {
+	_, ok := topLevelRoles[name]
 	return ok
 }
 
 func (db *DB) AddRole(name string, r *data.Role) error {
-	if !ValidRole(name) {
+	if !IsTopLevelRole(name) {
 		return ErrInvalidRole
 	}
 	return db.addRole(name, r)
