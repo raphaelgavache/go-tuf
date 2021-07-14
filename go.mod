@@ -1,4 +1,4 @@
-module github.com/theupdateframework/go-tuf
+module github.com/raphaelgavache/go-tuf
 
 go 1.14
 
@@ -12,3 +12,5 @@ require (
 	golang.org/x/crypto v0.0.0-20190424203555-c05e17bb3b2d
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f
 )
+
+replace github.com/theupdateframework/go-tuf => ./go-tuf
