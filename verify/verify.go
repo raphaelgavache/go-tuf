@@ -24,7 +24,7 @@ func (db *DB) Verify(s *data.Signed, role string, minVersion int) error {
 		return err
 	}
 
-	if IsTopLevelRole(role) {
+	if isTopLevelRole(role) {
 		// Top-level roles can only sign metadata of the same type (e.g. snapshot
 		// metadata must be signed by the snapshot role).
 		if sm.Type != role {

@@ -327,7 +327,7 @@ func (r *Repo) AddPrivateKeyWithExpires(keyRole string, key *sign.PrivateKey, ex
 		return err
 	}
 
-	if !verify.IsTopLevelRole(keyRole) {
+	if !verify.ValidRole(keyRole) {
 		return ErrInvalidRole{keyRole}
 	}
 
@@ -410,7 +410,7 @@ func (r *Repo) RevokeKey(role, id string) error {
 }
 
 func (r *Repo) RevokeKeyWithExpires(keyRole, id string, expires time.Time) error {
-	if !verify.IsTopLevelRole(keyRole) {
+	if !verify.ValidRole(keyRole) {
 		return ErrInvalidRole{keyRole}
 	}
 
@@ -498,7 +498,7 @@ func (r *Repo) setMeta(name string, meta interface{}) error {
 
 func (r *Repo) Sign(name string) error {
 	role := strings.TrimSuffix(name, ".json")
-	if !verify.IsTopLevelRole(role) {
+	if !verify.ValidRole(role) {
 		return ErrInvalidRole{role}
 	}
 

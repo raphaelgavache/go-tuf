@@ -80,13 +80,18 @@ var topLevelRoles = map[string]struct{}{
 	"timestamp": {},
 }
 
-func IsTopLevelRole(name string) bool {
+// ValidRole checks if a role is a top level role.
+func ValidRole(name string) bool {
+	return isTopLevelRole(name)
+}
+
+func isTopLevelRole(name string) bool {
 	_, ok := topLevelRoles[name]
 	return ok
 }
 
 func (db *DB) AddRole(name string, r *data.Role) error {
-	if !IsTopLevelRole(name) {
+	if !isTopLevelRole(name) {
 		return ErrInvalidRole
 	}
 	return db.addRole(name, r)
