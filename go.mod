@@ -9,7 +9,7 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/syndtr/goleveldb v1.0.0
 	github.com/tent/canonical-json-go v0.0.0-20130607151641-96e4ba3a7613
-	github.com/theupdateframework/go-tuf v0.0.0-00010101000000-000000000000
+	github.com/theupdateframework/go-tuf v0.0.0-20210630170422-22a94818d17b // indirect
 	golang.org/x/crypto v0.0.0-20190424203555-c05e17bb3b2d
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f
 )
