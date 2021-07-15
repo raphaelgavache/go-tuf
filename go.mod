@@ -15,9 +15,3 @@ require (
 )
 
 replace github.com/theupdateframework/go-tuf => ../go-tuf
-
-replace github.com/theupdateframework/go-tuf/client => ./client
-
-replace github.com/theupdateframework/go-tuf/data => ./data
-
-replace github.com/theupdateframework/go-tuf/type => ./type
