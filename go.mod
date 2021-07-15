@@ -15,3 +15,5 @@ require (
 )
 
 replace github.com/theupdateframework/go-tuf => ../go-tuf
+
+replace github.com/theupdateframework/go-tuf/.. => ../go-tuf/..
