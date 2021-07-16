@@ -146,12 +146,12 @@ func TestDelegationsIterator(t *testing.T) {
 				if !ok {
 					break
 				}
-				iterationOrder = append(iterationOrder, r.child.Name)
-				delegations, ok := tt.roles[r.child.Name]
+				iterationOrder = append(iterationOrder, r.delegatee.Name)
+				delegations, ok := tt.roles[r.delegatee.Name]
 				if !ok {
 					continue
 				}
-				d.add(delegations, r.child.Name)
+				d.add(delegations, r.delegatee.Name, verify.DelegationsVerifier{})
 			}
 			assert.Equal(t, tt.resultOrder, iterationOrder)
 		})
