@@ -14,10 +14,6 @@ func (c *Client) getTargetFileMeta(target string) (data.TargetFileMeta, error) {
 		return data.TargetFileMeta{}, err
 	}
 
-	// verifiers is map of parent targets name to an associated DelegationsVerifier
-	// that can verify all child targets pointed by delegatedRoles in the parent targets
-	verifiers := make(map[string]verify.DelegationsVerifier)
-
 	// delegationsIterator covers 5.6.7
 	// - pre-order depth-first search starting with the top targets
 	// - filter delegations with paths or path_hash_prefixes matching searched target
@@ -31,8 +27,7 @@ func (c *Client) getTargetFileMeta(target string) (data.TargetFileMeta, error) {
 		}
 
 		// covers 5.6.{1,2,3,4,5,6}
-		verifier := verifiers[d.parent]
-		targets, err := c.loadDelegatedTargets(snapshot, d.child.Name, verifier)
+		targets, err := c.loadDelegatedTargets(snapshot, d.delegatee.Name, d.verifier)
 		if err != nil {
 			return data.TargetFileMeta{}, err
 		}
@@ -43,16 +38,11 @@ func (c *Client) getTargetFileMeta(target string) (data.TargetFileMeta, error) {
 		}
 
 		if targets.Delegations != nil {
-			err := delegations.add(targets.Delegations.Roles, d.child.Name)
+			delegationsVerifier, err := verify.NewDelegationsVerifier(targets.Delegations)
 			if err != nil {
 				return data.TargetFileMeta{}, err
 			}
-
-			targetVerifier, err := verify.NewDelegationsVerifier(targets.Delegations)
-			if err != nil {
-				return data.TargetFileMeta{}, err
-			}
-			verifiers[d.child.Name] = targetVerifier
+			err = delegations.add(targets.Delegations.Roles, d.delegatee.Name, delegationsVerifier)
 		}
 	}
 
@@ -131,8 +121,9 @@ func (c *Client) loadDelegatedTargets(snapshot *data.Snapshot, role string, veri
 }
 
 type delegation struct {
-	parent string
-	child  data.DelegatedRole
+	delegator string
+	verifier  verify.DelegationsVerifier
+	delegatee data.DelegatedRole
 }
 
 type delegationsIterator struct {
@@ -148,7 +139,7 @@ func newDelegationsIterator(target string) *delegationsIterator {
 		target: target,
 		stack: []delegation{
 			{
-				child: data.DelegatedRole{Name: "targets"},
+				delegatee: data.DelegatedRole{Name: "targets"},
 			},
 		},
 		visited: make(map[string]struct{}),
@@ -164,21 +155,21 @@ func (d *delegationsIterator) next() (value delegation, ok bool) {
 	d.stack = d.stack[:len(d.stack)-1]
 
 	// 5.6.7.1 cycles protection
-	if _, ok := d.visited[delegation.child.Name]; ok {
+	if _, ok := d.visited[delegation.delegatee.Name]; ok {
 		return d.next()
 	}
-	d.visited[delegation.child.Name] = struct{}{}
+	d.visited[delegation.delegatee.Name] = struct{}{}
 
 	// 5.6.7.2 trim delegations to visit, only the current role and its delegations
 	// will be considered
 	// https://github.com/theupdateframework/specification/issues/168
-	if delegation.child.Terminating {
+	if delegation.delegatee.Terminating {
 		d.stack = d.stack[0:0]
 	}
 	return delegation, true
 }
 
-func (d *delegationsIterator) add(roles []data.DelegatedRole, parent string) error {
+func (d *delegationsIterator) add(roles []data.DelegatedRole, delegator string, verifier verify.DelegationsVerifier) error {
 	for i := len(roles) - 1; i >= 0; i-- {
 		// Push the roles onto the stack in reverse so we get an preorder traversal
 		// of the delegations graph.
@@ -188,7 +179,12 @@ func (d *delegationsIterator) add(roles []data.DelegatedRole, parent string) err
 			return err
 		}
 		if matchesPath {
-			d.stack = append(d.stack, delegation{parent, r})
+			delegation := delegation{
+				delegator: delegator,
+				delegatee: r,
+				verifier:  verifier,
+			}
+			d.stack = append(d.stack, delegation)
 		}
 	}
 
