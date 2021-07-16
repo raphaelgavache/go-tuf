@@ -135,15 +135,10 @@ type delegation struct {
 	child  data.DelegatedRole
 }
 
-type delegationID struct {
-	parent string
-	child  string
-}
-
 type delegationsIterator struct {
 	stack   []delegation
 	file    string
-	visited map[delegationID]struct{}
+	visited map[string]struct{}
 }
 
 // newDelegationsIterator initialises an iterator with a first step
@@ -156,7 +151,7 @@ func newDelegationsIterator(file string) *delegationsIterator {
 				child: data.DelegatedRole{Name: "targets"},
 			},
 		},
-		visited: make(map[delegationID]struct{}),
+		visited: make(map[string]struct{}),
 	}
 	return i
 }
@@ -169,11 +164,10 @@ func (d *delegationsIterator) next() (delegation, bool) {
 	d.stack = d.stack[:len(d.stack)-1]
 
 	// 5.6.7.1 cycles protection
-	id := delegationID{delegation.parent, delegation.child.Name}
-	if _, ok := d.visited[id]; ok {
+	if _, ok := d.visited[delegation.child.Name]; ok {
 		return d.next()
 	}
-	d.visited[id] = struct{}{}
+	d.visited[delegation.child.Name] = struct{}{}
 
 	// 5.6.7.2 trim delegations to visit, only the current role and its delegations
 	// will be considered
