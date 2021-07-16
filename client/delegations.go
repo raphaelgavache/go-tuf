@@ -5,10 +5,10 @@ import (
 	"github.com/theupdateframework/go-tuf/verify"
 )
 
-// getTargetFileMeta searches for a verified TargetFileMeta matching a file name
+// getTargetFileMeta searches for a verified TargetFileMeta matching a target
 // Requires a local snapshot to be loaded and is locked to the snapshot versions.
 // Searches through delegated targets following TUF spec 1.0.19 section 5.6.
-func (c *Client) getTargetFileMeta(file string) (data.TargetFileMeta, error) {
+func (c *Client) getTargetFileMeta(target string) (data.TargetFileMeta, error) {
 	snapshot, err := c.loadLocalSnapshot()
 	if err != nil {
 		return data.TargetFileMeta{}, err
@@ -20,35 +20,35 @@ func (c *Client) getTargetFileMeta(file string) (data.TargetFileMeta, error) {
 
 	// delegationsIterator covers 5.6.7
 	// - pre-order depth-first search starting with the top targets
-	// - filter delegations with paths or path_hash_prefixes matching searched file
+	// - filter delegations with paths or path_hash_prefixes matching searched target
 	// - 5.6.7.1 cycles protection
 	// - 5.6.7.2 terminations
-	delegations := newDelegationsIterator(file)
+	delegations := newDelegationsIterator(target)
 	for i := 0; i < c.MaxDelegations; i++ {
 		d, ok := delegations.next()
 		if !ok {
-			return data.TargetFileMeta{}, ErrUnknownTarget{file, snapshot.Version}
+			return data.TargetFileMeta{}, ErrUnknownTarget{target, snapshot.Version}
 		}
 
 		// covers 5.6.{1,2,3,4,5,6}
 		verifier := verifiers[d.parent]
-		target, err := c.loadDelegatedTargets(snapshot, d.child.Name, verifier)
+		targets, err := c.loadDelegatedTargets(snapshot, d.child.Name, verifier)
 		if err != nil {
 			return data.TargetFileMeta{}, err
 		}
 
 		// stop when the searched TargetFileMeta is found
-		if m, ok := target.Targets[file]; ok {
+		if m, ok := targets.Targets[target]; ok {
 			return m, nil
 		}
 
-		if target.Delegations != nil {
-			err := delegations.add(target.Delegations.Roles, d.child.Name)
+		if targets.Delegations != nil {
+			err := delegations.add(targets.Delegations.Roles, d.child.Name)
 			if err != nil {
 				return data.TargetFileMeta{}, err
 			}
 
-			targetVerifier, err := verify.NewDelegationsVerifier(target.Delegations)
+			targetVerifier, err := verify.NewDelegationsVerifier(targets.Delegations)
 			if err != nil {
 				return data.TargetFileMeta{}, err
 			}
@@ -57,7 +57,7 @@ func (c *Client) getTargetFileMeta(file string) (data.TargetFileMeta, error) {
 	}
 
 	return data.TargetFileMeta{}, ErrMaxDelegations{
-		File:            file,
+		Target:          target,
 		MaxDelegations:  c.MaxDelegations,
 		SnapshotVersion: snapshot.Version,
 	}
@@ -137,15 +137,15 @@ type delegation struct {
 
 type delegationsIterator struct {
 	stack        []delegation
-	file         string
+	target       string
 	visitedRoles map[string]struct{}
 }
 
 // newDelegationsIterator initialises an iterator with a first step
 // on top level targets
-func newDelegationsIterator(file string) *delegationsIterator {
+func newDelegationsIterator(target string) *delegationsIterator {
 	i := &delegationsIterator{
-		file: file,
+		target: target,
 		stack: []delegation{
 			{
 				child: data.DelegatedRole{Name: "targets"},
@@ -186,7 +186,7 @@ func (d *delegationsIterator) add(roles []data.DelegatedRole, parent string) err
 		// Push the roles onto the stack in reverse so we get an in-order traversal
 		// of the delegations graph.
 		r := roles[i]
-		matchesPath, err := r.MatchesPath(d.file)
+		matchesPath, err := r.MatchesPath(d.target)
 		if err != nil {
 			return err
 		}
