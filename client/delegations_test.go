@@ -178,7 +178,7 @@ func TestMaxDelegations(t *testing.T) {
 	assert.Nil(t, err)
 	c.MaxDelegations = 2
 	_, err = c.getTargetFileMeta("c.txt")
-	assert.Equal(t, ErrMaxDelegations{File: "c.txt", MaxDelegations: 2, SnapshotVersion: 2}, err)
+	assert.Equal(t, ErrMaxDelegations{Target: "c.txt", MaxDelegations: 2, SnapshotVersion: 2}, err)
 }
 
 func TestMetaNotFound(t *testing.T) {
