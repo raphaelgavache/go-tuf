@@ -284,6 +284,9 @@ func TestPersistedMeta(t *testing.T) {
 	verify.IsExpired = func(t time.Time) bool { return false }
 	c, closer := initTestDelegationClient(t, "testdata/php-tuf-fixtures/TUFTestFixture3LevelDelegation")
 	defer closer()
+	for _, rootUpdater := range []bool{false, true} {
+		c.ChainedRootUpdater = rootUpdater
+	}
 	_, err := c.Update()
 	assert.Nil(t, err)
 
