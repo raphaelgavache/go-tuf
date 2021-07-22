@@ -431,7 +431,7 @@ func (c *Client) getRootAndLocalVersionsUnsafe() error {
 }
 
 // remoteGetFunc is the type of function the download method uses to download
-// remote files
+// remote files.
 type remoteGetFunc func(string) (io.ReadCloser, int64, error)
 
 // downloadHashed tries to download the hashed prefixed version of the file.
